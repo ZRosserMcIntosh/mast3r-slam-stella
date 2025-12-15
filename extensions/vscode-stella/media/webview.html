@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stella Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            background-color: #1e1e1e;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #viewport {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        #overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 6px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #overlay h3 {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #4fc3f7;
+        }
+        
+        #overlay .info-row {
+            margin: 4px 0;
+        }
+        
+        #overlay .label {
+            color: #9e9e9e;
+        }
+        
+        #overlay .value {
+            color: #fff;
+        }
+        
+        #controls-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 11px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 12px;
+            border-radius: 6px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #controls-hint kbd {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin: 0 2px;
+        }
+        
+        #click-to-start {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 200;
+            cursor: pointer;
+        }
+        
+        #click-to-start h2 {
+            margin-bottom: 10px;
+            color: #4fc3f7;
+        }
+        
+        #click-to-start p {
+            font-size: 14px;
+            color: #9e9e9e;
+        }
+        
+        #click-to-start.hidden {
+            display: none;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            z-index: 300;
+        }
+        
+        #loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top-color: #4fc3f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #loading.hidden {
+            display: none;
+        }
+        
+        #error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(200, 50, 50, 0.9);
+            color: #fff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 400;
+            max-width: 80%;
+        }
+        
+        #error-message.hidden {
+            display: none;
+        }
+        
+        /* Crosshair */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        #crosshair.visible {
+            opacity: 0.7;
+        }
+        
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: #fff;
+        }
+        
+        #crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        #crosshair::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="viewport"></canvas>
+        
+        <div id="crosshair"></div>
+        
+        <div id="overlay">
+            <h3 id="world-name">Loading...</h3>
+            <div class="info-row">
+                <span class="label">Position: </span>
+                <span class="value" id="position">0.00, 0.00, 0.00</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Level: </span>
+                <span class="value" id="level-name">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">FPS: </span>
+                <span class="value" id="fps">-</span>
+            </div>
+        </div>
+        
+        <div id="controls-hint">
+            <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move &nbsp;|&nbsp;
+            <kbd>Space</kbd> Jump &nbsp;|&nbsp;
+            <kbd>Shift</kbd> Run &nbsp;|&nbsp;
+            <kbd>Esc</kbd> Release cursor
+        </div>
+        
+        <div id="click-to-start">
+            <h2>🌍 Stella Viewer</h2>
+            <p>Click to start exploring</p>
+        </div>
+        
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Loading world...</p>
+        </div>
+        
+        <div id="error-message" class="hidden">
+            <h3>Error</h3>
+            <p id="error-text"></p>
+        </div>
+    </div>
+    
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GLTFLoader -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- JSZip for reading .stella files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- Main viewer script -->
+    <script src="${webviewJs}"></script>
+</body>
+</html>

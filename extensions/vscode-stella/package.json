@@ -1,0 +1,139 @@
+{
+  "name": "vscode-stella",
+  "displayName": "Stella World Viewer",
+  "description": "View and explore .stella 3D world files with WASD controls",
+  "version": "0.1.0",
+  "publisher": "stella-worlds",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/mast3r-slam-stella"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "3d",
+    "world",
+    "stella",
+    "viewer",
+    "floorplan",
+    "slam"
+  ],
+  "icon": "media/icon.png",
+  "activationEvents": [
+    "onCustomEditor:stella.worldViewer"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "stella.worldViewer",
+        "displayName": "Stella World Viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.stella"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "stella.extractPackage",
+        "title": "Stella: Extract Package Contents"
+      },
+      {
+        "command": "stella.showInfo",
+        "title": "Stella: Show World Info"
+      },
+      {
+        "command": "stella.buildFromFloorplan",
+        "title": "Stella: Build World from Floorplan"
+      },
+      {
+        "command": "stella.buildFromVideo",
+        "title": "Stella: Build World from Video"
+      },
+      {
+        "command": "stella.verifyChecksums",
+        "title": "Stella: Verify Package Checksums"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .stella",
+          "command": "stella.extractPackage",
+          "group": "stella"
+        },
+        {
+          "when": "resourceExtname == .stella",
+          "command": "stella.showInfo",
+          "group": "stella"
+        },
+        {
+          "when": "resourceExtname == .png || resourceExtname == .jpg || resourceExtname == .jpeg",
+          "command": "stella.buildFromFloorplan",
+          "group": "stella"
+        },
+        {
+          "when": "resourceExtname == .mp4 || resourceExtname == .mov",
+          "command": "stella.buildFromVideo",
+          "group": "stella"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Stella",
+      "properties": {
+        "stella.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Path to Python executable for running stella CLI"
+        },
+        "stella.defaultWallHeight": {
+          "type": "number",
+          "default": 2.7,
+          "description": "Default wall height in meters for floorplan conversion"
+        },
+        "stella.defaultVoxelSize": {
+          "type": "number",
+          "default": 0.1,
+          "description": "Default voxel size in meters"
+        }
+      }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": "**/manifest.json",
+        "url": "./schemas/manifest.schema.json"
+      },
+      {
+        "fileMatch": "**/level.json",
+        "url": "./schemas/level.schema.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "jszip": "^3.10.0"
+  }
+}

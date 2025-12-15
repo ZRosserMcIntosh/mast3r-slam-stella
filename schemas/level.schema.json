@@ -1,0 +1,93 @@
+{
+  "$id": "https://example.com/schemas/level.schema.json",
+  "type": "object",
+  "properties": {
+    "level_version": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "scale": {
+      "type": "object",
+      "properties": {
+        "meters_per_unit": {
+          "type": "number"
+        }
+      },
+      "required": ["meters_per_unit"]
+    },
+    "spawn": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "yaw_degrees": {
+          "type": "number"
+        }
+      },
+      "required": ["position", "yaw_degrees"]
+    },
+    "render": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["glb"]
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "required": ["type", "uri"]
+    },
+    "collision": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["rlevox"]
+        },
+        "uri": {
+          "type": "string"
+        },
+        "player": {
+          "type": "object",
+          "properties": {
+            "height_m": {
+              "type": "number"
+            },
+            "radius_m": {
+              "type": "number"
+            },
+            "step_height_m": {
+              "type": "number"
+            }
+          },
+          "required": ["height_m", "radius_m", "step_height_m"]
+        }
+      },
+      "required": ["type", "uri", "player"]
+    },
+    "navigation": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "recast"]
+        },
+        "uri": {
+          "type": "string"
+        }
+      },
+      "required": ["type"]
+    }
+  },
+  "required": ["level_version", "name", "scale", "spawn", "render", "collision"]
+}

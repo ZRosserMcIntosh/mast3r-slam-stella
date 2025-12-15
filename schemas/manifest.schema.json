@@ -1,0 +1,101 @@
+{
+  "$id": "https://example.com/manifest.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "created_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "git_commit": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "version"]
+    },
+    "units": {
+      "type": "string"
+    },
+    "axis": {
+      "type": "object",
+      "properties": {
+        "up": {
+          "type": "string"
+        },
+        "forward": {
+          "type": "string"
+        },
+        "handedness": {
+          "type": "string"
+        }
+      },
+      "required": ["up", "forward", "handedness"]
+    },
+    "world": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "privacy": {
+          "type": "object",
+          "properties": {
+            "contains_source_media": {
+              "type": "boolean"
+            }
+          },
+          "required": ["contains_source_media"]
+        }
+      },
+      "required": ["title", "tags", "privacy"]
+    },
+    "levels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "path"]
+      }
+    },
+    "assets": {
+      "type": "object",
+      "properties": {
+        "thumbnail": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": ["format", "version", "created_utc", "units", "axis", "levels"]
+}
