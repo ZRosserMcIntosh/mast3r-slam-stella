@@ -11,13 +11,15 @@ Stella World Package - A portable 3D world format for explorable spaces.
 
 __version__ = "0.1.0"
 
-from stella.package import pack_stella, unpack_stella
+from stella.package import pack_stella, unpack_stella, get_stella_info, validate_stella
 from stella.manifest import make_manifest, make_level_json, Manifest, LevelJson
 from stella.vox_rle import write_rlevox, read_rlevox
 
 __all__ = [
     "pack_stella",
-    "unpack_stella", 
+    "unpack_stella",
+    "get_stella_info",
+    "validate_stella",
     "make_manifest",
     "make_level_json",
     "Manifest",

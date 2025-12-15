@@ -221,5 +221,64 @@ class TestComputeSha256:
         assert hello_hash == "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
 
 
+class TestValidateStella:
+    """Test .stella validation."""
+    
+    def test_validate_valid_stella(self):
+        """Test validation of a properly structured .stella file."""
+        from stella.package import validate_stella
+        
+        manifest = make_manifest(title="Valid Test")
+        file_map = {
+            "levels/0/level.json": b'{"name": "Test Level"}',
+            "levels/0/render.glb": b"GLB_DATA",
+            "levels/0/collision.rlevox": b"VOX_DATA",
+        }
+        
+        with tempfile.NamedTemporaryFile(suffix='.stella', delete=False) as f:
+            path = f.name
+        
+        try:
+            pack_stella(path, manifest, file_map)
+            
+            valid, errors = validate_stella(path)
+            assert valid, f"Expected valid, got errors: {errors}"
+            assert errors == []
+        finally:
+            os.unlink(path)
+    
+    def test_validate_missing_files(self):
+        """Test validation catches missing required files."""
+        from stella.package import validate_stella
+        
+        manifest = make_manifest(title="Missing Files Test")
+        # Missing render.glb and collision.rlevox
+        file_map = {
+            "levels/0/level.json": b'{"name": "Test Level"}',
+        }
+        
+        with tempfile.NamedTemporaryFile(suffix='.stella', delete=False) as f:
+            path = f.name
+        
+        try:
+            pack_stella(path, manifest, file_map)
+            
+            valid, errors = validate_stella(path)
+            assert not valid, "Expected invalid due to missing files"
+            assert len(errors) == 2  # Missing render.glb and collision.rlevox
+            assert any("render.glb" in e for e in errors)
+            assert any("collision.rlevox" in e for e in errors)
+        finally:
+            os.unlink(path)
+    
+    def test_validate_nonexistent_file(self):
+        """Test validation of non-existent file."""
+        from stella.package import validate_stella
+        
+        valid, errors = validate_stella("/nonexistent/path/to/file.stella")
+        assert not valid
+        assert any("not found" in e.lower() for e in errors)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

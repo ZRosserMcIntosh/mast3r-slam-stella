@@ -261,3 +261,81 @@ def list_stella_contents(stella_path: Union[str, Path]) -> List[str]:
     """
     with zipfile.ZipFile(stella_path, "r") as zf:
         return zf.namelist()
+
+
+def validate_stella(stella_path: Union[str, Path]) -> Tuple[bool, List[str]]:
+    """
+    Validate a .stella file structure and contents.
+    
+    Checks:
+    - Valid ZIP archive
+    - manifest.json exists and is valid JSON
+    - Each level has level.json, render.glb, collision.rlevox
+    - If checksums.sha256 exists, verify file hashes
+    
+    Args:
+        stella_path: Path to .stella file
+    
+    Returns:
+        Tuple of (is_valid, list_of_errors)
+    
+    Example:
+        >>> is_valid, errors = validate_stella("world.stella")
+        >>> if not is_valid:
+        ...     print(f"Validation failed: {errors}")
+    """
+    errors = []
+    stella_path = Path(stella_path)
+    
+    # Check file exists
+    if not stella_path.exists():
+        return False, [f"File not found: {stella_path}"]
+    
+    # Check valid ZIP
+    try:
+        zf = zipfile.ZipFile(stella_path, "r")
+    except zipfile.BadZipFile:
+        return False, ["Not a valid ZIP file"]
+    
+    try:
+        # Check manifest exists
+        if "manifest.json" not in zf.namelist():
+            errors.append("Missing required file: manifest.json")
+        else:
+            try:
+                manifest_bytes = zf.read("manifest.json")
+                manifest_data = json.loads(manifest_bytes.decode("utf-8"))
+                
+                # Check manifest has levels
+                if "levels" not in manifest_data:
+                    errors.append("manifest.json missing 'levels' field")
+                elif not manifest_data["levels"]:
+                    errors.append("manifest.json has empty 'levels' array")
+                else:
+                    # Check each level has required files
+                    for level in manifest_data["levels"]:
+                        level_id = level.get("id", "unknown")
+                        level_dir = f"levels/{level_id}/"
+                        
+                        required_files = [
+                            f"{level_dir}level.json",
+                            f"{level_dir}render.glb",
+                            f"{level_dir}collision.rlevox",
+                        ]
+                        
+                        for req_file in required_files:
+                            if req_file not in zf.namelist():
+                                errors.append(f"Missing required file: {req_file}")
+            except json.JSONDecodeError as e:
+                errors.append(f"Invalid JSON in manifest.json: {e}")
+        
+        # Verify checksums if present
+        if "checksums.sha256" in zf.namelist():
+            checksum_valid, checksum_errors = verify_stella_checksums(stella_path)
+            if not checksum_valid:
+                errors.extend(checksum_errors)
+    
+    finally:
+        zf.close()
+    
+    return len(errors) == 0, errors
