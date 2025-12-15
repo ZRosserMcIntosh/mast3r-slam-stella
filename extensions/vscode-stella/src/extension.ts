@@ -170,9 +170,8 @@ async function buildFromFloorplan(uri?: vscode.Uri) {
                 
                 vscode.window.showInformationMessage(`Created: ${outputUri.fsPath}`);
                 
-                // Open the created file
-                const doc = await vscode.workspace.openTextDocument(outputUri);
-                await vscode.window.showTextDocument(doc);
+                // Open the created file in the custom editor (not as text document)
+                await vscode.commands.executeCommand('vscode.openWith', outputUri, 'stella.worldViewer');
             }
         );
     } catch (error) {
@@ -221,6 +220,9 @@ async function buildFromVideo(uri?: vscode.Uri) {
                 ]);
                 
                 vscode.window.showInformationMessage(`Created: ${outputUri.fsPath}`);
+                
+                // Open the created file in the custom editor
+                await vscode.commands.executeCommand('vscode.openWith', outputUri, 'stella.worldViewer');
             }
         );
     } catch (error) {
